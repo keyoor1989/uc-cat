@@ -164,6 +164,64 @@ const HomePage = () => {
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
+  const formatDescription = (text) => {
+    if (!text) return '';
+
+    // Split into lines
+    const lines = text.split('\n');
+    let formattedHtml = '';
+    let inList = false;
+
+    lines.forEach((line, index) => {
+      // Skip empty lines but add spacing
+      if (line.trim() === '') {
+        if (inList) {
+          formattedHtml += '</ul>';
+          inList = false;
+        }
+        formattedHtml += '<br/>';
+        return;
+      }
+
+      // Handle bullet points (lines starting with - or * or •)
+      if (line.trim().match(/^[-*•]\s/)) {
+        if (!inList) {
+          formattedHtml += '<ul class="list-disc ml-5 space-y-1">';
+          inList = true;
+        }
+        const content = line.trim().substring(2); // Remove the bullet marker
+        formattedHtml += `<li>${formatInlineStyles(content)}</li>`;
+      } else {
+        // Close list if we were in one
+        if (inList) {
+          formattedHtml += '</ul>';
+          inList = false;
+        }
+        // Regular paragraph
+        formattedHtml += `<p class="mb-2">${formatInlineStyles(line)}</p>`;
+      }
+    });
+
+    // Close list if still open
+    if (inList) {
+      formattedHtml += '</ul>';
+    }
+
+    return formattedHtml;
+  };
+
+  const formatInlineStyles = (text) => {
+    // Bold: **text** or __text__
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+    // Italic: *text* or _text_ (but not if it's part of **)
+    text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    text = text.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
+
+    return text;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -289,7 +347,10 @@ const HomePage = () => {
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{product.name}</CardTitle>
-                  <CardDescription className="text-slate-600">{product.description}</CardDescription>
+                  <CardDescription
+                    className="text-slate-600 line-clamp-3"
+                    dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
+                  />
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -349,8 +410,11 @@ const HomePage = () => {
                               <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">₹{product.price}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-slate-600 mb-1">Description</p>
-                              <p className="text-slate-700">{product.description}</p>
+                              <p className="text-sm text-slate-600 mb-2 font-semibold">Description</p>
+                              <div
+                                className="text-slate-700 prose prose-sm max-w-none"
+                                dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
+                              />
                             </div>
                             {product.youtube_link && getYouTubeEmbedUrl(product.youtube_link) && (
                               <div>

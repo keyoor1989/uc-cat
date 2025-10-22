@@ -271,6 +271,54 @@ const AdminDashboard = () => {
     return category ? category.name : 'Unknown';
   };
 
+  const formatDescription = (text) => {
+    if (!text) return '';
+
+    const lines = text.split('\n');
+    let formattedHtml = '';
+    let inList = false;
+
+    lines.forEach((line) => {
+      if (line.trim() === '') {
+        if (inList) {
+          formattedHtml += '</ul>';
+          inList = false;
+        }
+        formattedHtml += '<br/>';
+        return;
+      }
+
+      if (line.trim().match(/^[-*•]\s/)) {
+        if (!inList) {
+          formattedHtml += '<ul class="list-disc ml-5 space-y-1">';
+          inList = true;
+        }
+        const content = line.trim().substring(2);
+        formattedHtml += `<li>${formatInlineStyles(content)}</li>`;
+      } else {
+        if (inList) {
+          formattedHtml += '</ul>';
+          inList = false;
+        }
+        formattedHtml += `<p class="mb-1">${formatInlineStyles(line)}</p>`;
+      }
+    });
+
+    if (inList) {
+      formattedHtml += '</ul>';
+    }
+
+    return formattedHtml;
+  };
+
+  const formatInlineStyles = (text) => {
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    text = text.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
+    return text;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
@@ -346,8 +394,17 @@ const AdminDashboard = () => {
                         value={productForm.description}
                         onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                         required
-                        rows={3}
+                        rows={6}
                       />
+                      <div className="mt-2 text-xs text-slate-500 bg-blue-50 border border-blue-200 rounded p-3">
+                        <p className="font-semibold text-slate-700 mb-1">Formatting Guide:</p>
+                        <ul className="space-y-1">
+                          <li>• Use <code className="bg-slate-200 px-1 rounded">**text**</code> for <strong>bold text</strong></li>
+                          <li>• Use <code className="bg-slate-200 px-1 rounded">*text*</code> for <em>italic text</em></li>
+                          <li>• Start lines with <code className="bg-slate-200 px-1 rounded">-</code> for bullet points</li>
+                          <li>• Press Enter for new lines</li>
+                        </ul>
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="product-price">Price (₹)</Label>
@@ -443,7 +500,10 @@ const AdminDashboard = () => {
                     <CardDescription className="text-sm">{getCategoryName(product.category_id)}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-600 text-sm mb-3 line-clamp-2">{product.description}</p>
+                    <div
+                      className="text-slate-600 text-sm mb-3 line-clamp-2"
+                      dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
+                    />
                     <p className="text-xl font-bold text-slate-900 mb-4">₹{product.price}</p>
                     <div className="flex gap-2">
                       <Button
