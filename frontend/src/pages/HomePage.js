@@ -143,11 +143,6 @@ const HomePage = () => {
               {settings?.company_logo && (
                 <img src={settings.company_logo} alt="Logo" className="h-10 md:h-12 w-auto object-contain" />
               )}
-              <div>
-                <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Product Catalogue
-                </h1>
-              </div>
             </div>
             <div className="flex items-center space-x-2 md:space-x-3">
               <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
