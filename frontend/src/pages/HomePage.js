@@ -193,7 +193,10 @@ const HomePage = () => {
 
       {/* Search and Filter */}
       <div className="container mx-auto px-4 py-6 md:py-8">
-        <p className="text-center text-slate-600 mb-4 text-sm md:text-base">Browse our complete product range</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+          Product Catalogue
+        </h1>
+        <p className="text-center text-slate-600 mb-6 text-sm md:text-base">Browse our complete product range</p>
         <div className="flex flex-col md:flex-row gap-4 mb-6 md:mb-8">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 h-5 w-5" />
