@@ -92,10 +92,42 @@ const HomePage = () => {
 
   const handleShareProduct = (product) => {
     const category = getCategoryName(product.category_id);
-    const message = `Check out this product from United Copier!\n\n*${product.name}*\nCategory: ${category}\nPrice: ₹${product.price}\n\n${product.description}\n\nContact: ${settings?.whatsapp_number || '8103349299'}`;
+
+    // Get the website URL
+    const websiteUrl = window.location.origin;
+
+    // Create a formatted message with product details
+    let message = `🛒 *Check out this product from United Copier!*\n\n`;
+    message += `📦 *${product.name}*\n`;
+    message += `📁 Category: ${category}\n`;
+    message += `💰 Price: ₹${product.price.toLocaleString('en-IN')}\n\n`;
+
+    // Add description (truncate if too long)
+    const shortDesc = product.description.length > 150
+      ? product.description.substring(0, 150) + '...'
+      : product.description;
+    message += `📝 ${shortDesc}\n\n`;
+
+    // Add website link
+    message += `🌐 Visit our catalogue: ${websiteUrl}\n\n`;
+
+    // Add contact info
+    message += `📞 Contact: ${settings?.whatsapp_number || '8103349299'}\n`;
+    message += `📍 United Copier - All Solutions Under A Roof for Printers`;
+
+    // If product has an image URL (not base64), include it at the beginning for preview
+    if (product.images && product.images.length > 0) {
+      const firstImage = product.images[0];
+      // Check if it's a URL (not base64)
+      if (firstImage.startsWith('http')) {
+        // Add image URL at the start for WhatsApp preview
+        message = `${firstImage}\n\n${message}`;
+      }
+    }
+
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
-    toast.success('Share on WhatsApp');
+    toast.success('Opening WhatsApp to share product');
   };
 
   const handleGeneratePDF = async () => {
@@ -228,13 +260,15 @@ const HomePage = () => {
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-lg border-b-2 border-blue-200 sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-            <div className="flex items-center space-x-3">
+          <div className="flex flex-col gap-3">
+            {/* Logo - Centered */}
+            <div className="flex items-center justify-center">
               {settings?.company_logo && (
-                <img src={settings.company_logo} alt="Logo" className="h-10 md:h-12 w-auto object-contain" />
+                <img src={settings.company_logo} alt="United Copier Logo" className="h-14 md:h-16 w-auto object-contain" />
               )}
             </div>
-            <div className="flex items-center space-x-2 md:space-x-3">
+            {/* Buttons - Centered */}
+            <div className="flex items-center justify-center space-x-2 md:space-x-3">
               <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="generate-pdf-btn" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
