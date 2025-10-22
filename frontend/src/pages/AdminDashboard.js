@@ -145,18 +145,37 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProductForm(prev => ({
-          ...prev,
-          images: [...prev.images, reader.result]
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
+
+    for (const file of files) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(
+          `${API}/upload-image`,
+          formData,
+          {
+            headers: {
+              ...getAuthHeaders(),
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+
+        if (response.data.success) {
+          setProductForm(prev => ({
+            ...prev,
+            images: [...prev.images, response.data.url]
+          }));
+          toast.success(`Image uploaded: ${file.name}`);
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    }
   };
 
   const removeImage = (index) => {
@@ -240,14 +259,32 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSettingsForm(prev => ({ ...prev, company_logo: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(
+          `${API}/upload-image`,
+          formData,
+          {
+            headers: {
+              ...getAuthHeaders(),
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+
+        if (response.data.success) {
+          setSettingsForm(prev => ({ ...prev, company_logo: response.data.url }));
+          toast.success('Logo uploaded successfully');
+        }
+      } catch (error) {
+        console.error('Error uploading logo:', error);
+        toast.error('Failed to upload logo');
+      }
     }
   };
 
