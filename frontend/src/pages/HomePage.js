@@ -141,6 +141,87 @@ const HomePage = () => {
     return category ? category.name : 'Unknown';
   };
 
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+
+    // Handle different YouTube URL formats
+    let videoId = null;
+
+    // Format: https://www.youtube.com/watch?v=VIDEO_ID
+    // Format: https://youtube.com/watch?v=VIDEO_ID
+    if (url.includes('watch?v=')) {
+      videoId = url.split('watch?v=')[1].split('&')[0];
+    }
+    // Format: https://youtu.be/VIDEO_ID
+    else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    }
+    // Format: https://www.youtube.com/embed/VIDEO_ID
+    else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('embed/')[1].split('?')[0];
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
+
+  const formatDescription = (text) => {
+    if (!text) return '';
+
+    // Split into lines
+    const lines = text.split('\n');
+    let formattedHtml = '';
+    let inList = false;
+
+    lines.forEach((line, index) => {
+      // Skip empty lines but add spacing
+      if (line.trim() === '') {
+        if (inList) {
+          formattedHtml += '</ul>';
+          inList = false;
+        }
+        formattedHtml += '<br/>';
+        return;
+      }
+
+      // Handle bullet points (lines starting with - or * or •)
+      if (line.trim().match(/^[-*•]\s/)) {
+        if (!inList) {
+          formattedHtml += '<ul class="list-disc ml-5 space-y-1">';
+          inList = true;
+        }
+        const content = line.trim().substring(2); // Remove the bullet marker
+        formattedHtml += `<li>${formatInlineStyles(content)}</li>`;
+      } else {
+        // Close list if we were in one
+        if (inList) {
+          formattedHtml += '</ul>';
+          inList = false;
+        }
+        // Regular paragraph
+        formattedHtml += `<p class="mb-2">${formatInlineStyles(line)}</p>`;
+      }
+    });
+
+    // Close list if still open
+    if (inList) {
+      formattedHtml += '</ul>';
+    }
+
+    return formattedHtml;
+  };
+
+  const formatInlineStyles = (text) => {
+    // Bold: **text** or __text__
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+    // Italic: *text* or _text_ (but not if it's part of **)
+    text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    text = text.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
+
+    return text;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -253,7 +334,7 @@ const HomePage = () => {
                     <img
                       src={product.images[0]}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -266,7 +347,10 @@ const HomePage = () => {
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{product.name}</CardTitle>
-                  <CardDescription className="text-slate-600">{product.description}</CardDescription>
+                  <CardDescription
+                    className="text-slate-600 line-clamp-3"
+                    dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
+                  />
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -312,7 +396,7 @@ const HomePage = () => {
                                     key={idx}
                                     src={img}
                                     alt={`${product.name} ${idx + 1}`}
-                                    className="w-full h-48 object-cover rounded-lg border-2 border-blue-200"
+                                    className="w-full h-48 object-contain rounded-lg border-2 border-blue-200 bg-slate-50"
                                   />
                                 ))}
                               </div>
@@ -326,17 +410,20 @@ const HomePage = () => {
                               <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">₹{product.price}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-slate-600 mb-1">Description</p>
-                              <p className="text-slate-700">{product.description}</p>
+                              <p className="text-sm text-slate-600 mb-2 font-semibold">Description</p>
+                              <div
+                                className="text-slate-700 prose prose-sm max-w-none"
+                                dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
+                              />
                             </div>
-                            {product.youtube_link && (
+                            {product.youtube_link && getYouTubeEmbedUrl(product.youtube_link) && (
                               <div>
                                 <p className="text-sm text-slate-600 mb-2">Video</p>
                                 <div className="aspect-video">
                                   <iframe
                                     width="100%"
                                     height="100%"
-                                    src={product.youtube_link.replace('watch?v=', 'embed/')}
+                                    src={getYouTubeEmbedUrl(product.youtube_link)}
                                     title="Product video"
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
