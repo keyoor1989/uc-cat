@@ -272,6 +272,16 @@ const HomePage = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">₹{product.price}</span>
+                      <Button
+                        data-testid={`share-btn-${product.id}`}
+                        onClick={() => handleShareProduct(product)}
+                        size="icon"
+                        variant="outline"
+                        className="border-2 border-green-400 text-green-600 hover:bg-green-50 hover:border-green-500"
+                        title="Share on WhatsApp"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -280,7 +290,7 @@ const HomePage = () => {
                         className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
                       >
                         <MessageCircle className="mr-2 h-4 w-4" />
-                        WhatsApp
+                        Contact
                       </Button>
                       <Dialog>
                         <DialogTrigger asChild>
