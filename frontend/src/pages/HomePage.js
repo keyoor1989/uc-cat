@@ -285,6 +285,7 @@ const HomePage = () => {
                         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle className="text-2xl">{product.name}</DialogTitle>
+                            <DialogDescription>View complete product details</DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
                             {/* Image Gallery */}
