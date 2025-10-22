@@ -47,7 +47,8 @@ const HomePage = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API}/products`);
+      // Only fetch published products for public view
+      const response = await axios.get(`${API}/products?status=published`);
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);

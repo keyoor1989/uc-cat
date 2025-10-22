@@ -82,6 +82,7 @@ class Product(BaseModel):
     category_id: str
     images: List[str] = []  # URLs or base64
     youtube_link: Optional[str] = None
+    status: str = "draft"  # "draft" or "published"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
@@ -91,6 +92,7 @@ class ProductCreate(BaseModel):
     category_id: str
     images: List[str] = []
     youtube_link: Optional[str] = None
+    status: str = "draft"  # "draft" or "published"
 
 class Settings(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -198,14 +200,22 @@ async def create_product(product: ProductCreate, payload: dict = Depends(verify_
     return product_obj
 
 @api_router.get("/products", response_model=List[Product])
-async def get_products(category_id: Optional[str] = Query(None)):
+async def get_products(
+    category_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None)  # "draft", "published", or None for all
+):
     query = {}
     if category_id:
         query['category_id'] = category_id
+    if status:
+        query['status'] = status
     products = await db.products.find(query, {"_id": 0}).to_list(1000)
     for prod in products:
         if isinstance(prod['created_at'], str):
             prod['created_at'] = datetime.fromisoformat(prod['created_at'])
+        # Set default status for existing products without status field
+        if 'status' not in prod:
+            prod['status'] = 'published'
     return products
 
 @api_router.get("/products/{product_id}", response_model=Product)

@@ -33,10 +33,12 @@ const AdminDashboard = () => {
     price: '',
     category_id: '',
     images: [],
-    youtube_link: ''
+    youtube_link: '',
+    status: 'draft'
   });
   const [editingProduct, setEditingProduct] = useState(null);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'draft', 'published'
 
   // Settings Form
   const [settingsForm, setSettingsForm] = useState({ whatsapp_number: '', company_logo: '' });
@@ -138,12 +140,22 @@ const AdminDashboard = () => {
   // Products
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API}/products`);
+      const url = statusFilter === 'all'
+        ? `${API}/products`
+        : `${API}/products?status=${statusFilter}`;
+      const response = await axios.get(url);
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
   };
+
+  // Re-fetch products when status filter changes
+  useEffect(() => {
+    if (activeTab === 'products') {
+      fetchProducts();
+    }
+  }, [statusFilter, activeTab]);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -236,13 +248,31 @@ const AdminDashboard = () => {
         price: product.price.toString(),
         category_id: product.category_id,
         images: product.images || [],
-        youtube_link: product.youtube_link || ''
+        youtube_link: product.youtube_link || '',
+        status: product.status || 'draft'
       });
     } else {
       setEditingProduct(null);
-      setProductForm({ name: '', description: '', price: '', category_id: '', images: [], youtube_link: '' });
+      setProductForm({ name: '', description: '', price: '', category_id: '', images: [], youtube_link: '', status: 'draft' });
     }
     setProductDialogOpen(true);
+  };
+
+  // Quick toggle product status
+  const toggleProductStatus = async (product) => {
+    try {
+      const newStatus = product.status === 'published' ? 'draft' : 'published';
+      await axios.put(
+        `${API}/products/${product.id}`,
+        { ...product, status: newStatus },
+        { headers: getAuthHeaders() }
+      );
+      toast.success(`Product ${newStatus === 'published' ? 'published' : 'moved to draft'}`);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error toggling product status:', error);
+      toast.error('Error updating product status');
+    }
   };
 
   // Settings
@@ -400,7 +430,28 @@ const AdminDashboard = () => {
           <TabsContent value="products">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-slate-900">Products</h2>
-              <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+              <div className="flex items-center gap-3">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[200px] bg-white">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Products</SelectItem>
+                    <SelectItem value="published">
+                      <div className="flex items-center">
+                        <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                        Published Only
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="draft">
+                      <div className="flex items-center">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+                        Drafts Only
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="add-product-btn" onClick={() => openProductDialog()} className="bg-slate-900 hover:bg-slate-800">
                     <Plus className="mr-2 h-4 w-4" />
@@ -510,9 +561,39 @@ const AdminDashboard = () => {
                         </div>
                       )}
                     </div>
+                    <div>
+                      <Label>Product Status</Label>
+                      <Select
+                        value={productForm.status}
+                        onValueChange={(value) => setProductForm({ ...productForm, status: value })}
+                      >
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">
+                            <div className="flex items-center">
+                              <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+                              Draft - Save for later
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="published">
+                            <div className="flex items-center">
+                              <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                              Published - Visible to customers
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {productForm.status === 'draft'
+                          ? 'This product will be saved as draft and not visible to customers'
+                          : 'This product will be visible on the public catalogue'}
+                      </p>
+                    </div>
                     <DialogFooter>
                       <Button data-testid="product-submit-btn" type="submit" className="bg-slate-900 hover:bg-slate-800">
-                        {editingProduct ? 'Update' : 'Create'}
+                        {editingProduct ? 'Update' : 'Create'} {productForm.status === 'draft' ? 'Draft' : 'Product'}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -531,6 +612,20 @@ const AdminDashboard = () => {
                         <Package className="h-12 w-12 text-slate-300" />
                       </div>
                     )}
+                    {/* Status Badge */}
+                    <div className="absolute top-2 right-2">
+                      {product.status === 'published' ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                          Published
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1.5"></span>
+                          Draft
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <CardHeader>
                     <CardTitle className="text-lg">{product.name}</CardTitle>
@@ -542,17 +637,27 @@ const AdminDashboard = () => {
                       dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
                     />
                     <p className="text-xl font-bold text-slate-900 mb-4">₹{product.price}</p>
-                    <div className="flex gap-2">
-                      <Button
-                        data-testid={`edit-product-${product.id}`}
-                        onClick={() => openProductDialog(product)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Edit className="mr-1 h-3 w-3" />
-                        Edit
-                      </Button>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <Button
+                          data-testid={`edit-product-${product.id}`}
+                          onClick={() => openProductDialog(product)}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <Edit className="mr-1 h-3 w-3" />
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => toggleProductStatus(product)}
+                          variant={product.status === 'published' ? 'secondary' : 'default'}
+                          size="sm"
+                          className="flex-1"
+                        >
+                          {product.status === 'published' ? 'Move to Draft' : 'Publish'}
+                        </Button>
+                      </div>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button data-testid={`delete-product-${product.id}`} variant="destructive" size="sm" className="flex-1">
