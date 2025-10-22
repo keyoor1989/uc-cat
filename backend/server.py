@@ -274,19 +274,60 @@ async def generate_pdf(pdf_request: PDFRequest):
     # Generate PDF
     pdf_path = f"/tmp/catalogue_{uuid.uuid4()}.pdf"
     
+    # Custom page template with header and footer
+    def add_header_footer(canvas, doc):
+        canvas.saveState()
+        
+        # Header with colorful gradient bar
+        canvas.setFillColorRGB(0.23, 0.51, 0.96)  # Blue
+        canvas.rect(0, doc.height + 1.5*inch, doc.width + 2*inch, 0.3*inch, fill=True)
+        
+        # Footer background
+        canvas.setFillColorRGB(0.95, 0.95, 0.97)
+        canvas.rect(0, 0, doc.width + 2*inch, 1.2*inch, fill=True)
+        
+        # Footer content
+        canvas.setFillColorRGB(0.2, 0.2, 0.3)
+        canvas.setFont('Helvetica-Bold', 14)
+        canvas.drawCentredString(doc.width/2 + inch, 0.85*inch, "United Copier")
+        
+        canvas.setFont('Helvetica', 9)
+        canvas.setFillColorRGB(0.3, 0.3, 0.4)
+        canvas.drawCentredString(doc.width/2 + inch, 0.65*inch, "All Solutions Under A Roof for Printers")
+        canvas.drawCentredString(doc.width/2 + inch, 0.50*inch, "118, Jaora Compound, Indore")
+        canvas.drawCentredString(doc.width/2 + inch, 0.35*inch, "Contact: 8103349299")
+        canvas.drawCentredString(doc.width/2 + inch, 0.20*inch, "Branch Offices: Bhopal & Jabalpur")
+        
+        # Page number
+        canvas.setFont('Helvetica', 8)
+        canvas.setFillColorRGB(0.5, 0.5, 0.6)
+        canvas.drawRightString(doc.width + 0.8*inch, 0.3*inch, f"Page {canvas.getPageNumber()}")
+        
+        canvas.restoreState()
+    
     doc = SimpleDocTemplate(pdf_path, pagesize=A4,
-                           rightMargin=0.5*inch, leftMargin=0.5*inch,
-                           topMargin=0.5*inch, bottomMargin=0.5*inch)
+                           rightMargin=0.75*inch, leftMargin=0.75*inch,
+                           topMargin=1*inch, bottomMargin=1.5*inch)
     
     story = []
     styles = getSampleStyleSheet()
     
-    # Custom styles
+    # Custom styles with vibrant colors
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#2C3E50'),
+        fontSize=28,
+        textColor=colors.HexColor('#2563eb'),
+        spaceAfter=10,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'Subtitle',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#6366f1'),
         spaceAfter=30,
         alignment=TA_CENTER
     )
@@ -296,72 +337,117 @@ async def generate_pdf(pdf_request: PDFRequest):
         try:
             logo_data = settings['company_logo']
             if logo_data.startswith('data:image'):
-                # Extract base64 data
                 logo_data = logo_data.split(',')[1]
                 logo_bytes = base64.b64decode(logo_data)
-                logo_img = RLImage(BytesIO(logo_bytes), width=2*inch, height=1*inch)
+                logo_img = RLImage(BytesIO(logo_bytes), width=2.5*inch, height=1.2*inch)
             elif logo_data.startswith('http'):
                 response = requests.get(logo_data)
-                logo_img = RLImage(BytesIO(response.content), width=2*inch, height=1*inch)
+                logo_img = RLImage(BytesIO(response.content), width=2.5*inch, height=1.2*inch)
             else:
                 logo_img = None
             
             if logo_img:
                 story.append(logo_img)
-                story.append(Spacer(1, 0.3*inch))
+                story.append(Spacer(1, 0.2*inch))
         except:
             pass
     
-    # Add title
-    story.append(Paragraph("Product Catalogue", title_style))
-    story.append(Spacer(1, 0.3*inch))
+    # Add title and subtitle
+    story.append(Paragraph("Product Catalogue 2025", title_style))
+    story.append(Paragraph("Premium Office Solutions", subtitle_style))
+    story.append(Spacer(1, 0.4*inch))
     
-    # Add products
-    for product in products:
-        # Product name
-        prod_style = ParagraphStyle('ProductName', parent=styles['Heading2'], fontSize=16, textColor=colors.HexColor('#34495E'))
-        story.append(Paragraph(product['name'], prod_style))
-        story.append(Spacer(1, 0.1*inch))
+    # Add products with enhanced styling
+    for idx, product in enumerate(products):
+        # Product box with border
+        prod_name_style = ParagraphStyle(
+            'ProductName', 
+            parent=styles['Heading2'], 
+            fontSize=18, 
+            textColor=colors.HexColor('#1e40af'),
+            fontName='Helvetica-Bold',
+            spaceAfter=8
+        )
         
-        # Category
+        # Product name with number
+        story.append(Paragraph(f"{idx + 1}. {product['name']}", prod_name_style))
+        
+        # Category badge
         cat_name = category_dict.get(product['category_id'], 'N/A')
-        story.append(Paragraph(f"<b>Category:</b> {cat_name}", styles['Normal']))
-        story.append(Spacer(1, 0.05*inch))
+        cat_para = Paragraph(
+            f'<para alignment="left"><font color="#8b5cf6"><b>Category:</b></font> <font color="#6366f1">{cat_name}</font></para>',
+            styles['Normal']
+        )
+        story.append(cat_para)
+        story.append(Spacer(1, 0.08*inch))
         
-        # Price
-        story.append(Paragraph(f"<b>Price:</b> ₹{product['price']}", styles['Normal']))
-        story.append(Spacer(1, 0.05*inch))
+        # Price with highlight
+        price_style = ParagraphStyle(
+            'Price',
+            parent=styles['Normal'],
+            fontSize=16,
+            textColor=colors.HexColor('#059669'),
+            fontName='Helvetica-Bold'
+        )
+        story.append(Paragraph(f"Price: ₹{product['price']}", price_style))
+        story.append(Spacer(1, 0.08*inch))
         
         # Description
-        story.append(Paragraph(f"<b>Description:</b> {product['description']}", styles['Normal']))
-        story.append(Spacer(1, 0.1*inch))
+        desc_para = Paragraph(
+            f'<para alignment="left"><font color="#1f2937"><b>Description:</b> {product["description"]}</font></para>',
+            styles['Normal']
+        )
+        story.append(desc_para)
+        story.append(Spacer(1, 0.15*inch))
         
-        # Add first image if available
+        # Add product images in a grid
         if product.get('images') and len(product['images']) > 0:
-            try:
-                img_data = product['images'][0]
-                if img_data.startswith('data:image'):
-                    img_data = img_data.split(',')[1]
-                    img_bytes = base64.b64decode(img_data)
-                    prod_img = RLImage(BytesIO(img_bytes), width=3*inch, height=2*inch)
-                elif img_data.startswith('http'):
-                    response = requests.get(img_data)
-                    prod_img = RLImage(BytesIO(response.content), width=3*inch, height=2*inch)
-                else:
-                    prod_img = None
-                
-                if prod_img:
-                    story.append(prod_img)
-            except:
-                pass
+            images_to_show = product['images'][:3]  # Show up to 3 images
+            img_list = []
+            
+            for img_data in images_to_show:
+                try:
+                    if img_data.startswith('data:image'):
+                        img_data = img_data.split(',')[1]
+                        img_bytes = base64.b64decode(img_data)
+                        prod_img = RLImage(BytesIO(img_bytes), width=2*inch, height=1.5*inch)
+                    elif img_data.startswith('http'):
+                        response = requests.get(img_data)
+                        prod_img = RLImage(BytesIO(response.content), width=2*inch, height=1.5*inch)
+                    else:
+                        continue
+                    img_list.append(prod_img)
+                except:
+                    continue
+            
+            if img_list:
+                # Create table for images
+                img_table_data = [img_list]
+                img_table = Table(img_table_data, colWidths=[2.2*inch] * len(img_list))
+                img_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ]))
+                story.append(img_table)
+                story.append(Spacer(1, 0.15*inch))
         
-        story.append(Spacer(1, 0.3*inch))
-        story.append(Paragraph("_" * 80, styles['Normal']))
+        # Add decorative separator
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Colored separator line
+        separator_table = Table([['']], colWidths=[6.5*inch], rowHeights=[0.02*inch])
+        separator_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#93c5fd')),
+        ]))
+        story.append(separator_table)
         story.append(Spacer(1, 0.3*inch))
     
-    doc.build(story)
+    # Build PDF with custom template
+    doc.build(story, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
     
-    return FileResponse(pdf_path, media_type='application/pdf', filename='catalogue.pdf')
+    return FileResponse(pdf_path, media_type='application/pdf', filename='United_Copier_Catalogue.pdf')
 
 # Include the router in the main app
 app.include_router(api_router)
