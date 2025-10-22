@@ -147,7 +147,6 @@ const HomePage = () => {
                 <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                   Product Catalogue
                 </h1>
-                <p className="text-xs md:text-sm text-slate-600">Browse our complete product range</p>
               </div>
             </div>
             <div className="flex items-center space-x-2 md:space-x-3">
