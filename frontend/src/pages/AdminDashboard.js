@@ -325,6 +325,7 @@ const AdminDashboard = () => {
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+                    <DialogDescription>Fill in the product details below</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleProductSubmit} className="space-y-4">
                     <div>
