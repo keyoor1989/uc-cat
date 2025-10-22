@@ -499,6 +499,7 @@ const AdminDashboard = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>{editingCategory ? 'Edit Category' : 'Add New Category'}</DialogTitle>
+                    <DialogDescription>Manage product categories</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCategorySubmit} className="space-y-4">
                     <div>
