@@ -89,6 +89,14 @@ const HomePage = () => {
     window.open(whatsappUrl, '_blank');
   };
 
+  const handleShareProduct = (product) => {
+    const category = getCategoryName(product.category_id);
+    const message = `Check out this product from United Copier!\n\n*${product.name}*\nCategory: ${category}\nPrice: ₹${product.price}\n\n${product.description}\n\nContact: ${settings?.whatsapp_number || '8103349299'}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    toast.success('Share on WhatsApp');
+  };
+
   const handleGeneratePDF = async () => {
     if (selectedProducts.length === 0) {
       toast.error('Please select at least one product');
