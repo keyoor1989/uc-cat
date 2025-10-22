@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -14,6 +15,7 @@ from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
 import base64
+import shutil
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage, PageBreak, KeepTogether, Frame, PageTemplate
@@ -28,6 +30,10 @@ import html
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Create uploads directory if it doesn't exist
+UPLOADS_DIR = ROOT_DIR / 'uploads'
+UPLOADS_DIR.mkdir(exist_ok=True)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -76,6 +82,7 @@ class Product(BaseModel):
     category_id: str
     images: List[str] = []  # URLs or base64
     youtube_link: Optional[str] = None
+    status: str = "draft"  # "draft" or "published"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
@@ -85,6 +92,7 @@ class ProductCreate(BaseModel):
     category_id: str
     images: List[str] = []
     youtube_link: Optional[str] = None
+    status: str = "draft"  # "draft" or "published"
 
 class Settings(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -192,14 +200,22 @@ async def create_product(product: ProductCreate, payload: dict = Depends(verify_
     return product_obj
 
 @api_router.get("/products", response_model=List[Product])
-async def get_products(category_id: Optional[str] = Query(None)):
+async def get_products(
+    category_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None)  # "draft", "published", or None for all
+):
     query = {}
     if category_id:
         query['category_id'] = category_id
+    if status:
+        query['status'] = status
     products = await db.products.find(query, {"_id": 0}).to_list(1000)
     for prod in products:
         if isinstance(prod['created_at'], str):
             prod['created_at'] = datetime.fromisoformat(prod['created_at'])
+        # Set default status for existing products without status field
+        if 'status' not in prod:
+            prod['status'] = 'published'
     return products
 
 @api_router.get("/products/{product_id}", response_model=Product)
@@ -251,12 +267,51 @@ async def update_settings(settings_update: SettingsUpdate, payload: dict = Depen
         new_settings = Settings(**settings_update.model_dump(exclude_unset=True))
         await db.settings.insert_one(new_settings.model_dump())
         return new_settings
-    
+
     update_data = settings_update.model_dump(exclude_unset=True)
     await db.settings.update_one({"id": "settings"}, {"$set": update_data})
-    
+
     updated = await db.settings.find_one({"id": "settings"}, {"_id": 0})
     return updated
+
+# Image Upload Route
+@api_router.post("/upload-image")
+async def upload_image(file: UploadFile = File(...), payload: dict = Depends(verify_token)):
+    """
+    Upload an image to the server and return its URL
+    """
+    try:
+        # Validate file type
+        allowed_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+        file_ext = Path(file.filename).suffix.lower()
+
+        if file_ext not in allowed_extensions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type. Allowed: {', '.join(allowed_extensions)}"
+            )
+
+        # Generate unique filename
+        unique_filename = f"{uuid.uuid4()}{file_ext}"
+        file_path = UPLOADS_DIR / unique_filename
+
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Get the base URL from environment or use default
+        base_url = os.environ.get('BASE_URL', 'http://localhost:8000')
+        image_url = f"{base_url}/uploads/{unique_filename}"
+
+        return {
+            "success": True,
+            "url": image_url,
+            "filename": unique_filename
+        }
+
+    except Exception as e:
+        logger.error(f"Error uploading image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error uploading image: {str(e)}")
 
 # Helper function to format description text for PDF
 def format_description_for_pdf(text):
@@ -629,6 +684,9 @@ async def generate_pdf(pdf_request: PDFRequest):
 
 # Include the router in the main app
 app.include_router(api_router)
+
+# Mount static files for uploads
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,

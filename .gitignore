@@ -52,6 +52,10 @@ __pycache__/
 venv/
 .venv/
 
+# Uploaded files (keep directory structure but not content)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 # Development tools
 chainlit.md
 .chainlit
