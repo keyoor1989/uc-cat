@@ -141,6 +141,29 @@ const HomePage = () => {
     return category ? category.name : 'Unknown';
   };
 
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+
+    // Handle different YouTube URL formats
+    let videoId = null;
+
+    // Format: https://www.youtube.com/watch?v=VIDEO_ID
+    // Format: https://youtube.com/watch?v=VIDEO_ID
+    if (url.includes('watch?v=')) {
+      videoId = url.split('watch?v=')[1].split('&')[0];
+    }
+    // Format: https://youtu.be/VIDEO_ID
+    else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    }
+    // Format: https://www.youtube.com/embed/VIDEO_ID
+    else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('embed/')[1].split('?')[0];
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -253,7 +276,7 @@ const HomePage = () => {
                     <img
                       src={product.images[0]}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -312,7 +335,7 @@ const HomePage = () => {
                                     key={idx}
                                     src={img}
                                     alt={`${product.name} ${idx + 1}`}
-                                    className="w-full h-48 object-cover rounded-lg border-2 border-blue-200"
+                                    className="w-full h-48 object-contain rounded-lg border-2 border-blue-200 bg-slate-50"
                                   />
                                 ))}
                               </div>
@@ -329,14 +352,14 @@ const HomePage = () => {
                               <p className="text-sm text-slate-600 mb-1">Description</p>
                               <p className="text-slate-700">{product.description}</p>
                             </div>
-                            {product.youtube_link && (
+                            {product.youtube_link && getYouTubeEmbedUrl(product.youtube_link) && (
                               <div>
                                 <p className="text-sm text-slate-600 mb-2">Video</p>
                                 <div className="aspect-video">
                                   <iframe
                                     width="100%"
                                     height="100%"
-                                    src={product.youtube_link.replace('watch?v=', 'embed/')}
+                                    src={getYouTubeEmbedUrl(product.youtube_link)}
                                     title="Product video"
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

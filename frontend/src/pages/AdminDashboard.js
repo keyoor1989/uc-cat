@@ -403,7 +403,7 @@ const AdminDashboard = () => {
                         <div className="grid grid-cols-3 gap-2 mt-3">
                           {productForm.images.map((img, idx) => (
                             <div key={idx} className="relative group">
-                              <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-24 object-cover rounded" />
+                              <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-24 object-contain rounded bg-slate-50 border border-slate-200" />
                               <button
                                 type="button"
                                 onClick={() => removeImage(idx)}
@@ -431,7 +431,7 @@ const AdminDashboard = () => {
                 <Card key={product.id} className="bg-white border-slate-200" data-testid={`product-item-${product.id}`}>
                   <div className="relative h-40 bg-slate-100">
                     {product.images && product.images.length > 0 ? (
-                      <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                      <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Package className="h-12 w-12 text-slate-300" />
