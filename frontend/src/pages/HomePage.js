@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Package, ShoppingBag, MessageCircle, Download, Search, Play, Phone, MapPin, Building2, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -300,8 +301,35 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Category Tabs */}
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6 md:mb-8">
+        {/* Category Filter - Dropdown on Mobile, Tabs on Desktop */}
+
+        {/* Mobile Dropdown */}
+        <div className="mb-6 md:hidden">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full bg-white border-2 border-blue-200 shadow-md h-12 text-base">
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-base py-3">
+                <div className="flex items-center">
+                  <Package className="mr-2 h-4 w-4" />
+                  All Products
+                </div>
+              </SelectItem>
+              {categories.map(category => (
+                <SelectItem key={category.id} value={category.id} className="text-base py-3">
+                  <div className="flex items-center">
+                    <Package className="mr-2 h-4 w-4" />
+                    {category.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop Tabs */}
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8 hidden md:block">
           <TabsList className="bg-white border-2 border-blue-200 p-1 shadow-lg">
             <TabsTrigger data-testid="category-all" value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
               All Products
