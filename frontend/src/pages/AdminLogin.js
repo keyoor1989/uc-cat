@@ -100,9 +100,6 @@ const AdminLogin = () => {
                 {loading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
-            <p className="text-center text-sm text-slate-500 mt-4">
-              Default credentials: admin / admin123
-            </p>
           </CardContent>
         </Card>
       </div>
