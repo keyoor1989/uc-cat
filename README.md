@@ -42,6 +42,7 @@ United Copier Product Catalogue is a comprehensive web application designed to s
 
 ### 🛍️ Public Catalogue
 - **Product Browsing** - Grid layout with beautiful card design
+- **Published Products Only** - Customers see only published products, drafts hidden
 - **Advanced Search** - Real-time search by product name and description
 - **Category Filtering** - Responsive tabs (desktop) and dropdown (mobile)
 - **Rich Product Details** - Images, descriptions with formatting, pricing, videos
@@ -51,6 +52,9 @@ United Copier Product Catalogue is a comprehensive web application designed to s
 
 ### 🔧 Admin Dashboard
 - **Product Management** - Full CRUD operations for products
+- **Draft/Publish System** - Save products as drafts before publishing
+- **Status Management** - Quick toggle between draft and published
+- **Status Filtering** - Filter products by draft, published, or all
 - **Category Management** - Organize products into categories
 - **Image Upload** - Server-side storage with HTTP URLs
 - **Rich Text Editor** - Markdown-like formatting (bold, italic, bullets)
@@ -158,6 +162,25 @@ United Copier Product Catalogue is a comprehensive web application designed to s
 - Improved security with proper authentication
 - Better error handling and user feedback
 - Optimized image handling
+
+#### 📝 **Draft/Publish System** (New Feature)
+- **Save Work-in-Progress** - Products can be saved as drafts
+- **Status Management:**
+  - **Draft** - Not visible to customers, work-in-progress
+  - **Published** - Visible on public catalogue
+- **Admin Features:**
+  - Status dropdown filter (All, Published, Drafts)
+  - Visual status badges (green for published, yellow for draft)
+  - One-click publish/unpublish buttons
+  - Status selector in product form with helpful descriptions
+- **Benefits:**
+  - Test products before making them public
+  - Save incomplete products for later completion
+  - Seasonal control (hide/show products)
+  - Non-destructive workflow (draft instead of delete)
+- **Backward Compatible:**
+  - Existing products automatically set to "published"
+  - No data migration required
 
 ---
 
@@ -293,13 +316,41 @@ export const API = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
    - **Category:** Select from dropdown
    - **Images:** Upload images (will be stored on server)
    - **YouTube Link:** Optional video URL
-4. Click **"Create"**
+   - **Product Status:** Choose:
+     - **Draft** - Save for later, not visible to customers
+     - **Published** - Immediately visible on public catalogue
+4. Click **"Create Draft"** or **"Create Product"** (button text changes based on status)
 
 #### Upload Images
 - Images are automatically uploaded to server
 - Generates HTTP URLs for sharing
 - Supports: JPG, PNG, GIF, WEBP
 - Multiple images supported (up to 3 displayed)
+
+#### Working with Drafts
+
+**Create as Draft:**
+1. When adding/editing a product
+2. Select **"Draft - Save for later"** in Product Status
+3. Click save - product won't be visible to customers
+
+**Publish a Draft:**
+- **Quick Method:** Click **"Publish"** button on product card
+- **Edit Method:** Edit product, change status to "Published", save
+
+**Unpublish a Product:**
+- Click **"Move to Draft"** button on published product
+- Product becomes hidden from public catalogue
+
+**Filter Products by Status:**
+- Use dropdown filter at top: **"All Products"** / **"Published Only"** / **"Drafts Only"**
+- See status badges on product cards: 🟢 Published / 🟡 Draft
+
+**Use Cases:**
+- Save incomplete products for later
+- Test products before going live
+- Hide seasonal products temporarily
+- Prepare bulk products, publish when ready
 
 ### Managing Categories
 
@@ -431,8 +482,11 @@ Authorization: Bearer <token>
 **Get All Products**
 ```http
 GET /api/products
-# Optional filter by category:
+# Optional filters:
 GET /api/products?category_id=uuid
+GET /api/products?status=published
+GET /api/products?status=draft
+GET /api/products?category_id=uuid&status=published
 
 Response: [
   {
@@ -443,10 +497,15 @@ Response: [
     "category_id": "uuid",
     "images": ["http://server.com/uploads/abc.jpg"],
     "youtube_link": "https://youtube.com/...",
+    "status": "published",  // "draft" or "published"
     "created_at": "2025-01-22T..."
   }
 ]
 ```
+
+**Query Parameters:**
+- `category_id` (optional): Filter by category
+- `status` (optional): Filter by status - "draft", "published", or omit for all
 
 **Create Product** (Auth Required)
 ```http
@@ -459,7 +518,8 @@ Authorization: Bearer <token>
   "price": 25000,
   "category_id": "uuid",
   "images": ["http://server.com/uploads/image.jpg"],
-  "youtube_link": "https://youtube.com/watch?v=..."
+  "youtube_link": "https://youtube.com/watch?v=...",
+  "status": "draft"  // or "published", defaults to "draft"
 }
 ```
 
@@ -471,6 +531,7 @@ Authorization: Bearer <token>
 {
   "name": "Updated Name",
   "price": 30000,
+  "status": "published",  // Change from draft to published
   ...
 }
 ```
