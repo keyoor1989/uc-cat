@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, MessageCircle, Download, Search, Play, Phone, MapPin, Building2 } from 'lucide-react';
+import { Package, ShoppingBag, MessageCircle, Download, Search, Play, Phone, MapPin, Building2, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
