@@ -346,14 +346,25 @@ const HomePage = () => {
                                 </div>
                               </div>
                             )}
-                            <Button
-                              data-testid={`whatsapp-modal-btn-${product.id}`}
-                              onClick={() => handleWhatsAppClick(product)}
-                              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
-                            >
-                              <MessageCircle className="mr-2 h-4 w-4" />
-                              Contact via WhatsApp
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                data-testid={`whatsapp-modal-btn-${product.id}`}
+                                onClick={() => handleWhatsAppClick(product)}
+                                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
+                              >
+                                <MessageCircle className="mr-2 h-4 w-4" />
+                                Contact via WhatsApp
+                              </Button>
+                              <Button
+                                data-testid={`share-modal-btn-${product.id}`}
+                                onClick={() => handleShareProduct(product)}
+                                variant="outline"
+                                className="flex-1 border-2 border-green-400 text-green-600 hover:bg-green-50 hover:border-green-500"
+                              >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Share Product
+                              </Button>
+                            </div>
                           </div>
                         </DialogContent>
                       </Dialog>
