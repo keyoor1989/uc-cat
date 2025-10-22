@@ -161,6 +161,7 @@ const HomePage = () => {
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>Select Products for PDF Brochure</DialogTitle>
+                    <DialogDescription>Choose the products you want to include in the PDF</DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="h-[400px] pr-4">
                     <div className="space-y-2">
