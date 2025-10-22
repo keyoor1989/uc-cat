@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, MessageCircle, Download, Search, Play } from 'lucide-react';
+import { Package, ShoppingBag, MessageCircle, Download, Search, Play, Phone, MapPin, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
@@ -134,28 +134,28 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+      <header className="bg-white/90 backdrop-blur-lg border-b-2 border-blue-200 sticky top-0 z-50 shadow-lg">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
             <div className="flex items-center space-x-3">
               {settings?.company_logo && (
-                <img src={settings.company_logo} alt="Logo" className="h-12 w-auto object-contain" />
+                <img src={settings.company_logo} alt="Logo" className="h-10 md:h-12 w-auto object-contain" />
               )}
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
+                <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                   Product Catalogue
                 </h1>
-                <p className="text-sm text-slate-600">Browse our complete product range</p>
+                <p className="text-xs md:text-sm text-slate-600">Browse our complete product range</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3">
               <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button data-testid="generate-pdf-btn" variant="outline" className="border-slate-300 hover:bg-slate-100">
+                  <Button data-testid="generate-pdf-btn" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                     <Download className="mr-2 h-4 w-4" />
-                    Download PDF
+                    <span className="hidden md:inline">Download</span> PDF
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
@@ -166,7 +166,7 @@ const HomePage = () => {
                   <ScrollArea className="h-[400px] pr-4">
                     <div className="space-y-2">
                       {products.map(product => (
-                        <div key={product.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">
+                        <div key={product.id} className="flex items-center space-x-3 p-3 border-2 border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all">
                           <Checkbox
                             data-testid={`pdf-select-${product.id}`}
                             checked={selectedProducts.includes(product.id)}
@@ -182,14 +182,14 @@ const HomePage = () => {
                   </ScrollArea>
                   <div className="flex justify-between items-center pt-4 border-t">
                     <p className="text-sm text-slate-600">{selectedProducts.length} products selected</p>
-                    <Button data-testid="download-pdf-btn" onClick={handleGeneratePDF} disabled={selectedProducts.length === 0}>
+                    <Button data-testid="download-pdf-btn" onClick={handleGeneratePDF} disabled={selectedProducts.length === 0} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                       <Download className="mr-2 h-4 w-4" />
                       Generate PDF
                     </Button>
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button data-testid="admin-login-btn" variant="ghost" onClick={() => navigate('/admin')} className="hover:bg-slate-100">
+              <Button data-testid="admin-login-btn" variant="outline" onClick={() => navigate('/admin')} className="border-2 border-blue-300 hover:bg-blue-50 hover:border-blue-500">
                 Admin
               </Button>
             </div>
@@ -198,25 +198,25 @@ const HomePage = () => {
       </header>
 
       {/* Search and Filter */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col md:flex-row gap-4 mb-6 md:mb-8">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 h-5 w-5" />
             <Input
               data-testid="search-input"
               type="text"
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white border-slate-300 focus:border-slate-500"
+              className="pl-10 bg-white border-2 border-blue-200 focus:border-blue-500 shadow-md"
             />
           </div>
         </div>
 
         {/* Category Tabs */}
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8">
-          <TabsList className="bg-white border border-slate-200 p-1">
-            <TabsTrigger data-testid="category-all" value="all" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white">
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6 md:mb-8">
+          <TabsList className="bg-white border-2 border-blue-200 p-1 shadow-lg">
+            <TabsTrigger data-testid="category-all" value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
               All Products
             </TabsTrigger>
             {categories.map(category => (
@@ -224,7 +224,7 @@ const HomePage = () => {
                 data-testid={`category-${category.id}`}
                 key={category.id}
                 value={category.id}
-                className="data-[state=active]:bg-slate-900 data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
               >
                 {category.name}
               </TabsTrigger>
@@ -235,14 +235,14 @@ const HomePage = () => {
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-20">
-            <Package className="mx-auto h-16 w-16 text-slate-300 mb-4" />
+            <Package className="mx-auto h-16 w-16 text-blue-300 mb-4" />
             <p className="text-slate-500 text-lg">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map(product => (
-              <Card key={product.id} className="product-card overflow-hidden bg-white border-slate-200 hover:border-slate-300" data-testid={`product-card-${product.id}`}>
-                <div className="relative h-56 bg-slate-100 overflow-hidden group">
+              <Card key={product.id} className="product-card overflow-hidden bg-white border-2 border-blue-200 hover:border-blue-400 shadow-lg" data-testid={`product-card-${product.id}`}>
+                <div className="relative h-56 bg-gradient-to-br from-blue-100 to-purple-100 overflow-hidden group">
                   {product.images && product.images.length > 0 ? (
                     <img
                       src={product.images[0]}
@@ -251,40 +251,40 @@ const HomePage = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Package className="h-20 w-20 text-slate-300" />
+                      <Package className="h-20 w-20 text-blue-300" />
                     </div>
                   )}
-                  <Badge className="absolute top-3 right-3 bg-white/90 text-slate-800 hover:bg-white">
+                  <Badge className="absolute top-3 right-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-lg">
                     {getCategoryName(product.category_id)}
                   </Badge>
                 </div>
                 <CardHeader>
-                  <CardTitle className="text-xl text-slate-900">{product.name}</CardTitle>
+                  <CardTitle className="text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{product.name}</CardTitle>
                   <CardDescription className="text-slate-600">{product.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-slate-900">₹{product.price}</span>
+                      <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">₹{product.price}</span>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         data-testid={`whatsapp-btn-${product.id}`}
                         onClick={() => handleWhatsAppClick(product)}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
                       >
                         <MessageCircle className="mr-2 h-4 w-4" />
                         WhatsApp
                       </Button>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button data-testid={`view-details-btn-${product.id}`} variant="outline" className="flex-1 border-slate-300 hover:bg-slate-100">
+                          <Button data-testid={`view-details-btn-${product.id}`} variant="outline" className="flex-1 border-2 border-blue-300 hover:bg-blue-50 hover:border-blue-500">
                             View Details
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle className="text-2xl">{product.name}</DialogTitle>
+                            <DialogTitle className="text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{product.name}</DialogTitle>
                             <DialogDescription>View complete product details</DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
@@ -296,18 +296,18 @@ const HomePage = () => {
                                     key={idx}
                                     src={img}
                                     alt={`${product.name} ${idx + 1}`}
-                                    className="w-full h-48 object-cover rounded-lg"
+                                    className="w-full h-48 object-cover rounded-lg border-2 border-blue-200"
                                   />
                                 ))}
                               </div>
                             )}
                             <div>
                               <p className="text-sm text-slate-600 mb-1">Category</p>
-                              <Badge>{getCategoryName(product.category_id)}</Badge>
+                              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">{getCategoryName(product.category_id)}</Badge>
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 mb-1">Price</p>
-                              <p className="text-3xl font-bold text-slate-900">₹{product.price}</p>
+                              <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">₹{product.price}</p>
                             </div>
                             <div>
                               <p className="text-sm text-slate-600 mb-1">Description</p>
@@ -325,7 +325,7 @@ const HomePage = () => {
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
-                                    className="rounded-lg"
+                                    className="rounded-lg border-2 border-blue-200"
                                   ></iframe>
                                 </div>
                               </div>
@@ -333,7 +333,7 @@ const HomePage = () => {
                             <Button
                               data-testid={`whatsapp-modal-btn-${product.id}`}
                               onClick={() => handleWhatsAppClick(product)}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
                             >
                               <MessageCircle className="mr-2 h-4 w-4" />
                               Contact via WhatsApp
@@ -349,6 +349,70 @@ const HomePage = () => {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 text-white mt-16">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Company Info */}
+            <div>
+              <h3 className="text-2xl font-bold mb-4">United Copier</h3>
+              <p className="text-blue-200 mb-2">All Solutions Under A Roof for Printers</p>
+              <div className="space-y-2 text-blue-100">
+                <div className="flex items-start">
+                  <MapPin className="h-5 w-5 mr-2 mt-1 flex-shrink-0" />
+                  <span>118, Jaora Compound, Indore</span>
+                </div>
+                <div className="flex items-center">
+                  <Phone className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <span>8103349299</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Branch Offices */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Branch Offices</h3>
+              <div className="space-y-3 text-blue-100">
+                <div className="flex items-center">
+                  <Building2 className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <span>Bhopal</span>
+                </div>
+                <div className="flex items-center">
+                  <Building2 className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <span>Jabalpur</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Quick Links</h3>
+              <div className="space-y-2">
+                <button 
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="block text-blue-100 hover:text-white transition-colors"
+                >
+                  Products
+                </button>
+                {settings?.whatsapp_number && (
+                  <a 
+                    href={`https://wa.me/${settings.whatsapp_number}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-blue-100 hover:text-white transition-colors"
+                  >
+                    Contact Us
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-blue-700 mt-8 pt-6 text-center text-blue-200">
+            <p>&copy; {new Date().getFullYear()} United Copier. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
