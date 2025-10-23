@@ -682,11 +682,11 @@ async def generate_pdf(pdf_request: PDFRequest):
 
     return FileResponse(pdf_path, media_type='application/pdf', filename='United_Copier_Catalogue.pdf')
 
+# Mount static files for uploads FIRST
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+
 # Include the router in the main app
 app.include_router(api_router)
-
-# Mount static files for uploads
-app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
